@@ -18,49 +18,31 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === 'production',
   },
   reactStrictMode: true,
-  devIndicators: false,
   poweredByHeader: false,
-  experimental: {
-    optimizeCss: true,
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-slot'],
-  },
-  webpack: (config, { dev, isServer }) => {
-    if (dev && !isServer) {
-      config.performance = {
-        hints: false,
-        maxEntrypointSize: 512000,
-        maxAssetSize: 512000
+  
+  // Simplified webpack config that addresses 'self is not defined' error
+  webpack: (config, { isServer }) => {
+    // Provide browser globals for server-side rendering
+    if (isServer) {
+      // Create empty objects/functions for browser globals
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
       };
-    }
-    
-    if (!dev) {
-      config.optimization = {
-        ...config.optimization,
-        minimize: true,
-        moduleIds: 'deterministic',
-        runtimeChunk: 'single',
-        splitChunks: {
-          chunks: 'all',
-          minSize: 20000,
-          maxSize: 244000,
-          cacheGroups: {
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              chunks: 'all',
-            },
-            common: {
-              minChunks: 2,
-              priority: -20,
-              reuseExistingChunk: true,
-            },
-          },
-        },
-      };
+      
+      // Define 'self' for libraries that expect it
+      config.plugins.push(
+        new config.webpack.DefinePlugin({
+          'self': 'global',
+        })
+      );
     }
     
     return config;
   },
+  
   async headers() {
     return [
       {
@@ -91,6 +73,6 @@ const nextConfig = {
       },
     ];
   },
-}
+};
 
 module.exports = nextConfig;
