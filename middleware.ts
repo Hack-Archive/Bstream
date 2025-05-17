@@ -74,7 +74,7 @@ export async function middleware(request: NextRequest) {
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.coinbase.com https://*.onchainkit.com;"
+    `default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.coinbase.com https://*.onchainkit.com ${process.env.NEXTAUTH_URL || ''};`
   )
   
   // Add caching headers for static assets

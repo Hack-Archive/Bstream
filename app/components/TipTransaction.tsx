@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { useAccount, useConfig } from 'wagmi'
 import { useWalletStats } from '@/components/wallet/WalletStatsProvider'
+import { env } from '@/lib/env'
 
 // Base Sepolia testnet chain ID
 const BASE_SEPOLIA_CHAIN_ID = 84532
@@ -34,7 +35,7 @@ export default function TipTransaction({
   // Always refresh from the API first to ensure cross-browser compatibility
   useEffect(() => {
     // First, check the API for the most up-to-date wallet address
-    fetch(`/api/users/${username}`)
+    fetch(`${env.NEXT_PUBLIC_BASE_URL}/api/users/${username}`)
       .then(response => response.json())
       .then(data => {
         if (data.walletAddress) {
@@ -79,7 +80,7 @@ export default function TipTransaction({
   
   // Helper function to update the server with an address
   const updateServerAddress = (address: string) => {
-    fetch(`/api/users/${username}/walletUpdate`, {
+    fetch(`${env.NEXT_PUBLIC_BASE_URL}/api/users/${username}/walletUpdate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -97,7 +98,7 @@ export default function TipTransaction({
 
   // Helper function to update recipient's wallet stats on the server
   const updateRecipientStats = (amount: number, fromAddress: string) => {
-    fetch(`/api/users/${username}/updateStats`, {
+    fetch(`${env.NEXT_PUBLIC_BASE_URL}/api/users/${username}/updateStats`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -116,7 +117,7 @@ export default function TipTransaction({
   const handleSendTip = async () => {
     // Refresh from the API one more time to ensure we have the latest address
     try {
-      const response = await fetch(`/api/users/${username}`);
+      const response = await fetch(`${env.NEXT_PUBLIC_BASE_URL}/api/users/${username}`);
       const userData = await response.json();
       if (userData.walletAddress) {
         setFinalRecipientAddress(userData.walletAddress);
@@ -254,4 +255,4 @@ export default function TipTransaction({
       )}
     </Button>
   );
-} 
+}

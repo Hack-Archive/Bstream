@@ -7,6 +7,7 @@ import { coinbaseWallet } from 'wagmi/connectors';
 import { http } from 'viem';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from 'react-error-boundary';
+import { env } from '@/lib/env';
 
 // Error fallback component
 function ErrorFallback({error, resetErrorBoundary}: {error: Error, resetErrorBoundary: () => void}) {
@@ -73,7 +74,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         connectors: [
           coinbaseWallet({
             appName: 'Bstream',
-            appLogoUrl: 'http://localhost:3000/logo.png',
+            appLogoUrl: `${env.NEXT_PUBLIC_BASE_URL}/logo.png`,
             reloadOnDisconnect: false,
           }),
         ],

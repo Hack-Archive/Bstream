@@ -16,6 +16,7 @@ import {
   type LifecycleStatus
 } from '@coinbase/onchainkit/transaction'
 import TipTransaction from "../components/TipTransaction"
+import { env } from "@/lib/env"
 
 // Define tip amount options
 const TIP_AMOUNTS = [
@@ -108,7 +109,7 @@ export default function DonationPage({ params }: { params: Promise<{ username: s
         const currentUserLink = localStorage.getItem('userLink');
         
         // Fetch user data from the API - this should be the source of truth
-        const response = await fetch(`/api/users/${username}`)
+        const response = await fetch(`${env.NEXT_PUBLIC_BASE_URL}/api/users/${username}`)
         
         if (!response.ok) {
           throw new Error('User not found')
@@ -156,7 +157,7 @@ export default function DonationPage({ params }: { params: Promise<{ username: s
     
     // Helper function to update the server with an address
     const updateServerAddress = (username: string, address: string) => {
-      fetch(`/api/users/${username}/walletUpdate`, {
+      fetch(`${env.NEXT_PUBLIC_BASE_URL}/api/users/${username}/walletUpdate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -567,4 +568,4 @@ export default function DonationPage({ params }: { params: Promise<{ username: s
       </div>
     </div>
   )
-} 
+}

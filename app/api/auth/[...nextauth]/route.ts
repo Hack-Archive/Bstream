@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import TwitchProvider from "next-auth/providers/twitch";
+import { env } from "@/lib/env";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [

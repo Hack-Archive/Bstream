@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ConnectWallet } from '@coinbase/onchainkit/wallet'
 import { useAccount, useConnect } from 'wagmi'
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
+import { env } from "@/lib/env"
 
 // Error fallback component
 function ErrorFallback({error, resetErrorBoundary}: FallbackProps) {
@@ -123,7 +124,7 @@ export default function WalletStep() {
           document.cookie = `walletAddress_${username.toLowerCase()}=${address}; path=/; max-age=31536000; SameSite=Strict`;
           
           // Also update the backend mockUsers data through the API
-          fetch(`/api/users/${username}/walletUpdate`, {
+          fetch(`${env.NEXT_PUBLIC_BASE_URL}/api/users/${username}/walletUpdate`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -271,4 +272,4 @@ export default function WalletStep() {
       </div>
     </div>
   )
-} 
+}

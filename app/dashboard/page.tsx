@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { useWalletStats } from '@/components/wallet/WalletStatsProvider'
 import { useAccount, useBalance } from 'wagmi'
+import { env } from "@/lib/env"
 
 // Dynamic imports for better code splitting
 const GradientBackground = React.lazy(() => import('@/components/ui/GradientBackground'))
@@ -79,7 +80,7 @@ export default function Dashboard() {
   // Fetch user stats from server
   useEffect(() => {
     if (username) {
-      fetch(`/api/users/${username}`)
+      fetch(`${env.NEXT_PUBLIC_BASE_URL}/api/users/${username}`)
         .then(response => response.json())
         .then(data => {
           if (data.walletStats) {
@@ -99,7 +100,7 @@ export default function Dashboard() {
   }, [username]);
 
   const handleCopyLink = useCallback(() => {
-    const link = `localhost:3000/${username}`
+    const link = `${env.NEXT_PUBLIC_BASE_URL}/${username}`
     navigator.clipboard.writeText(link)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -247,7 +248,7 @@ export default function Dashboard() {
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-blue-100/50 shadow-lg mb-6">
               <div className="text-gray-600 text-sm mb-2">Your Donation Link <span className="ml-1 text-xs" title="Share this link to receive donations">ⓘ</span></div>
               <div className="flex items-center gap-2">
-                <span className="text-blue-500 font-medium">{`localhost:3000/${username}`}</span>
+                <span className="text-blue-500 font-medium">{`${env.NEXT_PUBLIC_BASE_URL}/${username}`}</span>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -288,4 +289,4 @@ export default function Dashboard() {
       </div>
     </div>
   )
-} 
+}
