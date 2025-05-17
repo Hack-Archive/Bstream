@@ -14,34 +14,20 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
   },
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
-  },
-  reactStrictMode: true,
-  poweredByHeader: false,
   
-  // Simplified webpack config that addresses 'self is not defined' error
-  webpack: (config, { isServer }) => {
-    // Provide browser globals for server-side rendering
-    if (isServer) {
-      // Create empty objects/functions for browser globals
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-      };
-      
-      // Define 'self' for libraries that expect it
-      config.plugins.push(
-        new config.webpack.DefinePlugin({
-          'self': 'global',
-        })
-      );
-    }
-    
-    return config;
-  },
+  // Disable advanced optimizations that might cause issues
+  swcMinify: false,
+  
+  // Transpile specific packages
+  transpilePackages: [
+    '@coinbase/onchainkit',
+    '@coinbase/wallet-sdk',
+    'wagmi',
+    'viem',
+  ],
+  
+  // Eliminate the webpack customization entirely
+  // Use Next.js's built-in capabilities instead
   
   async headers() {
     return [
