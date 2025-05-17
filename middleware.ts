@@ -84,9 +84,9 @@ export async function middleware(request: NextRequest) {
     `
       default-src 'self';
       script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.coinbase.com https://*.walletlink.org;
-      style-src 'self' 'unsafe-inline' https://*.coinbase.com https://*.walletlink.org https://static.cloudflareinsights.com https://*.twitch.tv;
+      style-src 'self' 'unsafe-inline' https://*.coinbase.com https://*.walletlink.org https://static.cloudflareinsights.com https://*.twitch.tv https://fonts.googleapis.com;
       img-src 'self' data: https: blob:;
-      font-src 'self' data:;
+      font-src 'self' data: https://fonts.gstatic.com;
       connect-src 'self' https://*.coinbase.com https://*.onchainkit.com https://*.walletlink.org wss://*.walletlink.org wss://*.coinbase.com https://as.coinbase.com ${process.env.NEXTAUTH_URL || ''} https://*.twitch.tv https://*.twimg.com;
       frame-src 'self' https://*.coinbase.com https://*.walletlink.org https://*.twitch.tv;
       object-src 'none';
