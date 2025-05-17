@@ -7,6 +7,7 @@ import { Loader2, AlertCircle, ArrowLeft, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
+import { env } from "@/lib/env"
 
 export default function LinkStep() {
   const { data: session, status } = useSession()
@@ -135,7 +136,7 @@ export default function LinkStep() {
         {/* Input section */}
         <div className="mb-8">
           <div className="bg-white rounded-lg flex items-center px-3 shadow-md border border-blue-100 overflow-hidden">
-            <div className="text-gray-500 font-medium">localhost:3000/</div>
+            <div className="text-gray-500 font-medium">{new URL(env.NEXT_PUBLIC_BASE_URL).host}/</div>
             <Input 
               placeholder="yourname" 
               className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none text-gray-800" 

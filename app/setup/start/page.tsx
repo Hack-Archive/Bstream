@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
 import StaticRadialGradientBackground from "@/components/ui/StaticRadialGradientBackground"
+import { env } from "@/lib/env"
 
 // Extracted reusable components
 const StepIndicator = ({ currentStep }: { currentStep: number }) => {
@@ -113,7 +114,7 @@ export default function StartPage() {
       description: "Set your own custom link to start accepting tips!",
       children: (
         <div className="text-gray-500 flex items-center gap-2 mb-4">
-          <span className="font-medium">localhost:3000/</span>
+          <span className="font-medium">{new URL(env.NEXT_PUBLIC_BASE_URL).host}/</span>
           <span className="text-blue-500">yourname</span>
         </div>
       )

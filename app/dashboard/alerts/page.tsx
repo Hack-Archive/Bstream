@@ -7,6 +7,22 @@ import { Switch } from "@/components/ui/switch"
 import { Copy, InfoIcon } from "lucide-react"
 import { toast } from "sonner"
 import Image from "next/image"
+import { env } from "@/lib/env"
+
+// Function to convert Tenor URL to direct media URL if possible
+const processTenorUrl = (url: string): string => {
+  if (!url.includes('tenor.com')) return url;
+  
+  // Try to extract the GIF ID from various Tenor URL formats
+  const tenorIdMatch = url.match(/\/(\d+)\/?(?:\?|$)/);
+  if (tenorIdMatch && tenorIdMatch[1]) {
+    // If we can get the ID, construct a direct media URL
+    return `https://media.tenor.com/images/${tenorIdMatch[1]}/tenor.gif`;
+  }
+  
+  // If we can't parse it, return the original URL
+  return url;
+};
 
 export default function AlertsPage() {
   const [background, setBackground] = useState("#1e1b8b")
@@ -14,21 +30,46 @@ export default function AlertsPage() {
   const [gifUrl, setGifUrl] = useState("")
   const [playSound, setPlaySound] = useState(true)
   const [isValidGif, setIsValidGif] = useState(false)
+  const [processedGifUrl, setProcessedGifUrl] = useState("")
   
-  // Browser source link (example)
-  const browserSourceLink = "stream.gift/donations/events/" + (Math.random().toString(36).substring(2, 15))
+  // Browser source link with dynamic URL from environment
+  const baseUrl = new URL(env.NEXT_PUBLIC_BASE_URL).host
+  const browserSourceLink = `${baseUrl}/donations/events/${Math.random().toString(36).substring(2, 15)}`
   
-  // Check if the GIF URL is valid when it changes
+  // Process and validate the GIF URL
   useEffect(() => {
     if (!gifUrl) {
       setIsValidGif(false)
+      setProcessedGifUrl("");
       return
     }
     
-    // Simple check if the URL appears to be an image or gif URL
-    const isValidImageUrl = /\.(gif|jpe?g|png)($|\?)/i.test(gifUrl) || 
-                          gifUrl.includes('tenor.com') || 
-                          gifUrl.includes('giphy.com');
+    // Check if it's a direct image URL
+    const isDirectImageUrl = /\.(gif|jpe?g|png)($|\?)/i.test(gifUrl);
+    
+    // Check if it's from tenor or giphy (needs special handling)
+    const isTenorUrl = gifUrl.includes('tenor.com');
+    const isGiphyUrl = gifUrl.includes('giphy.com');
+    
+    // For most URLs, validate simply
+    const isValidImageUrl = isDirectImageUrl || isTenorUrl || isGiphyUrl;
+    
+    // Process the URL if needed
+    let processed = gifUrl;
+    if (isTenorUrl) {
+      processed = processTenorUrl(gifUrl);
+    }
+    setProcessedGifUrl(processed);
+    
+    console.log("GIF validation:", { 
+      originalUrl: gifUrl,
+      processedUrl: processed,
+      isDirectImageUrl,
+      isTenorUrl, 
+      isGiphyUrl,
+      isValid: isValidImageUrl 
+    });
+    
     setIsValidGif(isValidImageUrl);
   }, [gifUrl]);
   
@@ -151,12 +192,35 @@ export default function AlertsPage() {
               {/* GIF display area */}
               {isValidGif && gifUrl && (
                 <div className="mb-3 flex justify-center">
-                  <img 
-                    src={gifUrl} 
-                    alt="Alert animation" 
-                    className="max-w-full max-h-[120px] rounded"
-                    onError={() => setIsValidGif(false)}
-                  />
+                  {gifUrl.includes('tenor.com') && !processedGifUrl.endsWith('.gif') ? (
+                    // For Tenor GIFs that couldn't be converted to direct URLs, use an iframe
+                    <iframe 
+                      src={`${gifUrl.includes('?') ? gifUrl + '&' : gifUrl + '?'}embedded=true`}
+                      width="100%" 
+                      height="120px" 
+                      frameBorder="0" 
+                      className="rounded"
+                      allowFullScreen
+                      onError={() => console.error("Failed to load Tenor iframe")}
+                    ></iframe>
+                  ) : (
+                    // For direct GIF URLs or processed Tenor URLs
+                    <img 
+                      src={processedGifUrl || gifUrl} 
+                      alt="Alert animation" 
+                      className="max-w-full max-h-[120px] rounded"
+                      onError={(e) => {
+                        console.error("Failed to load GIF image:", e);
+                        // If processed URL fails, try the original as fallback
+                        if (processedGifUrl && processedGifUrl !== gifUrl) {
+                          const imgElement = e.target as HTMLImageElement;
+                          imgElement.src = gifUrl;
+                        } else {
+                          setIsValidGif(false);
+                        }
+                      }}
+                    />
+                  )}
                 </div>
               )}
               
