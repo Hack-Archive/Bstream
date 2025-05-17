@@ -2,6 +2,10 @@ import NextAuth from "next-auth";
 import TwitchProvider from "next-auth/providers/twitch";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   providers: [
     TwitchProvider({
       clientId: process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID!,

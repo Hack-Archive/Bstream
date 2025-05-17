@@ -75,7 +75,16 @@ export default function StartPage() {
     if (status === "unauthenticated") {
       router.push("/login")
     }
-  }, [status, router])
+    // For debugging purposes, log the session status and data
+    if (status === "authenticated" && session) {
+      console.log("Session authenticated:", {
+        userId: session.user?.id,
+        name: session.user?.name,
+        image: session.user?.image,
+        hasAccessToken: !!session.accessToken
+      })
+    }
+  }, [status, router, session])
 
   // Memoize setup cards data
   const setupCards = useMemo(() => [
