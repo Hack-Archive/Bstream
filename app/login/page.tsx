@@ -1,17 +1,28 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import { TwitchIcon } from "lucide-react"
-import { signIn } from "next-auth/react"
-import { useState } from "react"
+import { signIn, useSession } from "next-auth/react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  
+  // Redirect to setup if already authenticated
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      console.log("Login page: User is already authenticated, redirecting to setup", session)
+      router.push(`/setup/start?t=${Date.now()}`)
+    }
+  }, [status, session, router])
 
   const handleTwitchLogin = async () => {
     try {
       setIsLoading(true)
       await signIn("twitch", { 
-        callbackUrl: "/setup/start",
+        callbackUrl: `/setup/start?t=${Date.now()}`,
         redirect: true
       })
     } catch (error) {

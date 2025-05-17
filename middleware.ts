@@ -53,12 +53,12 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   })
   
-  // Debug logging (remove in production)
-  // console.log(`Middleware: Path ${path}, isPublic: ${isPublicPath}, hasToken: ${!!token}`);
+  // Debug logging in production temporarily to diagnose issues
+  console.log(`Middleware: Path ${path}, isPublic: ${isPublicPath}, hasToken: ${!!token}, token:`, JSON.stringify(token || {}));
   
   // Redirect to login if accessing protected route without authentication
   if (!isPublicPath && !token) {
-    // console.log("Middleware: Redirecting to login, no token for path:", path);
+    console.log("Middleware: Redirecting to login, no token for path:", path);
     const url = new URL("/login", request.url)
     url.searchParams.set("callbackUrl", request.url)
     return NextResponse.redirect(url)
@@ -66,8 +66,11 @@ export async function middleware(request: NextRequest) {
   
   // Redirect to login success page if accessing login while already authenticated
   if (path === "/login" && token) {
-    // console.log("Middleware: User is already authenticated, redirecting from login page");
-    return NextResponse.redirect(new URL("/setup/start", request.url))
+    console.log("Middleware: User is already authenticated, redirecting from login to setup");
+    // Force redirect to setup with cache-busting query parameter
+    const setupUrl = new URL("/setup/start", request.url)
+    setupUrl.searchParams.set("t", Date.now().toString())
+    return NextResponse.redirect(setupUrl)
   }
   
   // Add security headers

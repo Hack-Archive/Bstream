@@ -73,11 +73,12 @@ export default function StartPage() {
   // If not authenticated, redirect to login
   useEffect(() => {
     if (status === "unauthenticated") {
+      console.log("Setup page: Not authenticated, redirecting to login")
       router.push("/login")
     }
     // For debugging purposes, log the session status and data
     if (status === "authenticated" && session) {
-      console.log("Session authenticated:", {
+      console.log("Setup page: Session authenticated:", {
         userId: session.user?.id,
         name: session.user?.name,
         image: session.user?.image,
@@ -85,6 +86,19 @@ export default function StartPage() {
       })
     }
   }, [status, router, session])
+  
+  // Force revalidation on component mount
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        console.log("Setup page: Document became visible, checking session")
+        // You could trigger a session refresh here if needed
+      }
+    }
+    
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange)
+  }, [])
 
   // Memoize setup cards data
   const setupCards = useMemo(() => [
