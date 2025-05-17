@@ -6,7 +6,8 @@ import { getToken } from "next-auth/jwt"
 const PUBLIC_PATHS = new Set([
   "/",
   "/login",
-  "/api/auth"
+  "/api/auth",
+  "/setup/start" // Temporarily making setup/start public to debug
 ])
 
 // Cache static file extensions
@@ -47,10 +48,12 @@ export async function middleware(request: NextRequest) {
   
   const isPublicPath = PUBLIC_PATHS.has(path) || isPublicApi || isUsernamePage
   
-  // Get the session token with caching
+  // Enhanced token retrieval with more options for better compatibility
   const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
+    secureCookie: process.env.NODE_ENV === "production",
+    cookieName: "next-auth.session-token",
   })
   
   // Debug logging in production temporarily to diagnose issues

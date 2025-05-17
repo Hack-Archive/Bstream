@@ -52,7 +52,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/login?error=auth",
     newUser: "/setup/start",
   },
-  // Explicit cookie configuration
+  // Enhanced cookie configuration for better cross-domain compatibility
   cookies: {
     sessionToken: {
       name: `next-auth.session-token`,
@@ -61,6 +61,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         sameSite: "lax",
         path: "/",
         secure: process.env.NODE_ENV === "production",
+        domain: process.env.COOKIE_DOMAIN || undefined, // Use COOKIE_DOMAIN env var if set
       },
     },
   },

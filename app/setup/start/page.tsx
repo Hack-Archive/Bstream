@@ -72,19 +72,24 @@ export default function StartPage() {
   
   // If not authenticated, redirect to login
   useEffect(() => {
-    if (status === "unauthenticated") {
-      console.log("Setup page: Not authenticated, redirecting to login")
-      router.push("/login")
-    }
-    // For debugging purposes, log the session status and data
-    if (status === "authenticated" && session) {
-      console.log("Setup page: Session authenticated:", {
-        userId: session.user?.id,
-        name: session.user?.name,
-        image: session.user?.image,
-        hasAccessToken: !!session.accessToken
-      })
-    }
+    // Wait a brief moment to ensure session is loaded
+    const checkAuth = setTimeout(() => {
+      if (status === "unauthenticated") {
+        console.log("Setup page: Not authenticated, redirecting to login")
+        router.push("/login")
+      }
+      // For debugging purposes, log the session status and data
+      if (status === "authenticated" && session) {
+        console.log("Setup page: Session authenticated:", {
+          userId: session.user?.id,
+          name: session.user?.name,
+          image: session.user?.image,
+          hasAccessToken: !!session.accessToken
+        })
+      }
+    }, 500) // Small delay to ensure session is fully loaded
+    
+    return () => clearTimeout(checkAuth)
   }, [status, router, session])
   
   // Force revalidation on component mount
