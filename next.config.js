@@ -25,38 +25,6 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-slot'],
   },
   webpack: (config, { dev, isServer }) => {
-    // This is necessary to handle the 'self is not defined' error with jose library
-    if (isServer) {
-      // Ensure jose library runs correctly in Node.js environment
-      if (!config.resolve) config.resolve = {};
-      if (!config.resolve.fallback) config.resolve.fallback = {};
-      
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        // Polyfill for browser globals in Node.js environment
-        crypto: require.resolve('crypto-browserify'),
-        stream: require.resolve('stream-browserify'),
-        // Add other polyfills as needed
-      };
-    }
-    
-    // Explicitly mark jose as a client-side only package
-    if (isServer) {
-      const originalEntry = config.entry;
-      config.entry = async () => {
-        const entries = await originalEntry();
-        
-        // This ensures jose doesn't try to run in a Node.js environment
-        if (entries['pages/api/auth/[...nextauth]']) {
-          entries['pages/api/auth/[...nextauth]'] = entries['pages/api/auth/[...nextauth]'].filter(
-            (entry) => !entry.includes('node_modules/jose/')
-          );
-        }
-        
-        return entries;
-      };
-    }
-    
     if (dev && !isServer) {
       config.performance = {
         hints: false,
@@ -125,4 +93,4 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+module.exports = nextConfig;
