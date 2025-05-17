@@ -52,21 +52,30 @@ export default function Dashboard() {
     address: walletAddress ? `0x${walletAddress.replace(/^0x/, '')}` as `0x${string}` : undefined,
   })
 
-  // If not authenticated, redirect to login
+  // Enhanced auth debugging
   useEffect(() => {
     if (status === "unauthenticated") {
+      console.log("Dashboard: Redirecting to login - user is unauthenticated");
       router.push("/login")
+    } else if (status === "authenticated") {
+      console.log("Dashboard: User is authenticated:", session);
+    } else {
+      console.log("Dashboard: Auth status is loading");
     }
-  }, [status, router])
+  }, [status, router, session])
 
   // Get username and profile image from localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedUsername = localStorage.getItem('userLink')
       if (storedUsername) {
+        console.log("Dashboard: Found username in localStorage:", storedUsername);
         setUsername(storedUsername)
       } else if (session?.user?.username) {
+        console.log("Dashboard: Using username from session:", session.user.username);
         setUsername(session.user.username)
+      } else {
+        console.log("Dashboard: No username found in localStorage or session");
       }
       
       // Get profile image if available
@@ -80,9 +89,11 @@ export default function Dashboard() {
   // Fetch user stats from server
   useEffect(() => {
     if (username) {
+      console.log(`Dashboard: Fetching stats for user: ${username}`);
       fetch(`${env.NEXT_PUBLIC_BASE_URL}/api/users/${username}`)
         .then(response => response.json())
         .then(data => {
+          console.log("Dashboard: Received user data:", data);
           if (data.walletStats) {
             setServerStats(data.walletStats);
           }
@@ -101,6 +112,7 @@ export default function Dashboard() {
 
   const handleCopyLink = useCallback(() => {
     const link = `${env.NEXT_PUBLIC_BASE_URL}/${username}`
+    console.log(`Dashboard: Copying link: ${link}`);
     navigator.clipboard.writeText(link)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -190,6 +202,7 @@ export default function Dashboard() {
   }
 
   if (!session) {
+    console.log("Dashboard: No session available, showing empty state");
     return null
   }
 
@@ -201,8 +214,22 @@ export default function Dashboard() {
     </svg>
   )
 
+  // Debug component (remove in production)
+  const DebugInfo = () => (
+    <div className="fixed bottom-0 right-0 bg-black/80 text-white p-2 text-xs z-50">
+      <div>Auth Status: {status}</div>
+      <div>User ID: {session?.user?.id}</div>
+      <div>Username: {username}</div>
+      <div>Has Session: {!!session ? 'Yes' : 'No'}</div>
+      <div>NEXTAUTH_URL: {process.env.NEXT_PUBLIC_NEXTAUTH_URL}</div>
+      <div>BASE_URL: {env.NEXT_PUBLIC_BASE_URL}</div>
+    </div>
+  )
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 relative">
+      {process.env.NODE_ENV === 'development' && <DebugInfo />}
+      
       <Suspense fallback={<div className="absolute inset-0 bg-blue-50" />}>
         <GradientBackground />
       </Suspense>

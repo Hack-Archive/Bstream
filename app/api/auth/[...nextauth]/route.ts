@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import TwitchProvider from "next-auth/providers/twitch";
-import { env } from "@/lib/env";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -10,12 +9,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt: ({ token, account }) => {
-      if (account) token.accessToken = account.access_token;
+    // Enhanced jwt callback to ensure user data is properly passed
+    jwt: ({ token, account, user }) => {
+      if (account) {
+        token.accessToken = account.access_token;
+        // Make sure to include the user ID
+        if (user) {
+          token.id = user.id;
+          // If there's a username on the user object, include it too
+          if (user.name) {
+            token.username = user.name;
+          }
+        }
+      }
       return token;
     },
+    // Enhanced session callback to ensure all user data is available
     session: ({ session, token }) => {
+      if (token?.accessToken) session.accessToken = token.accessToken as string;
+      if (token?.id) session.user.id = token.id as string;
       if (token?.sub) session.user.id = token.sub;
+      // Include username if available
+      if (token?.username) session.user.username = token.username as string;
+      
+      // Debug logging (remove in production)
+      console.log("Session created:", {
+        userId: session.user.id,
+        username: session.user.username,
+        hasAccessToken: !!session.accessToken
+      });
+      
       return session;
     },
   },
@@ -25,6 +48,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/login?error=auth",
     newUser: "/setup/start",
   },
+  // Explicit cookie configuration
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
+  debug: process.env.NODE_ENV === "development",
   trustHost: true,
 });
 

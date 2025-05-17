@@ -53,8 +53,12 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   })
   
+  // Debug logging (remove in production)
+  console.log(`Middleware: Path ${path}, isPublic: ${isPublicPath}, hasToken: ${!!token}`);
+  
   // Redirect to login if accessing protected route without authentication
   if (!isPublicPath && !token) {
+    console.log("Middleware: Redirecting to login, no token for path:", path);
     const url = new URL("/login", request.url)
     url.searchParams.set("callbackUrl", request.url)
     return NextResponse.redirect(url)
@@ -62,6 +66,7 @@ export async function middleware(request: NextRequest) {
   
   // Redirect to login success page if accessing login while already authenticated
   if (path === "/login" && token) {
+    console.log("Middleware: User is already authenticated, redirecting from login page");
     return NextResponse.redirect(new URL("/setup/start", request.url))
   }
   
@@ -72,9 +77,11 @@ export async function middleware(request: NextRequest) {
   response.headers.set("X-Frame-Options", "DENY")
   response.headers.set("X-Content-Type-Options", "nosniff")
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
+  
+  // Updated CSP header to include walletlink.org
   response.headers.set(
     "Content-Security-Policy",
-    `default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.coinbase.com https://*.onchainkit.com ${process.env.NEXTAUTH_URL || ''};`
+    `default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.coinbase.com https://*.onchainkit.com wss://*.walletlink.org https://*.walletlink.org ${process.env.NEXTAUTH_URL || ''};`
   )
   
   // Add caching headers for static assets
