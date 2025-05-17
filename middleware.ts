@@ -54,11 +54,11 @@ export async function middleware(request: NextRequest) {
   })
   
   // Debug logging (remove in production)
-  console.log(`Middleware: Path ${path}, isPublic: ${isPublicPath}, hasToken: ${!!token}`);
+  // console.log(`Middleware: Path ${path}, isPublic: ${isPublicPath}, hasToken: ${!!token}`);
   
   // Redirect to login if accessing protected route without authentication
   if (!isPublicPath && !token) {
-    console.log("Middleware: Redirecting to login, no token for path:", path);
+    // console.log("Middleware: Redirecting to login, no token for path:", path);
     const url = new URL("/login", request.url)
     url.searchParams.set("callbackUrl", request.url)
     return NextResponse.redirect(url)
@@ -66,7 +66,7 @@ export async function middleware(request: NextRequest) {
   
   // Redirect to login success page if accessing login while already authenticated
   if (path === "/login" && token) {
-    console.log("Middleware: User is already authenticated, redirecting from login page");
+    // console.log("Middleware: User is already authenticated, redirecting from login page");
     return NextResponse.redirect(new URL("/setup/start", request.url))
   }
   
@@ -78,10 +78,23 @@ export async function middleware(request: NextRequest) {
   response.headers.set("X-Content-Type-Options", "nosniff")
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
   
-  // Updated CSP header to include walletlink.org
+  // Greatly expanded CSP to allow Coinbase wallet to function
   response.headers.set(
     "Content-Security-Policy",
-    `default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.coinbase.com https://*.onchainkit.com wss://*.walletlink.org https://*.walletlink.org ${process.env.NEXTAUTH_URL || ''};`
+    `
+      default-src 'self';
+      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.coinbase.com https://*.walletlink.org;
+      style-src 'self' 'unsafe-inline' https://*.coinbase.com https://*.walletlink.org;
+      img-src 'self' data: https: blob:;
+      font-src 'self' data:;
+      connect-src 'self' https://*.coinbase.com https://*.onchainkit.com https://*.walletlink.org wss://*.walletlink.org wss://*.coinbase.com https://as.coinbase.com ${process.env.NEXTAUTH_URL || ''};
+      frame-src 'self' https://*.coinbase.com https://*.walletlink.org;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      media-src 'self' blob:;
+      worker-src 'self' blob:;
+    `.replace(/\s+/g, ' ').trim()
   )
   
   // Add caching headers for static assets
